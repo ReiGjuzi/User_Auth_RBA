@@ -1,15 +1,12 @@
 package model;
 
+
 import java.util.Collection;
 import java.util.HashMap;
 
 public class UserStore {
     private final HashMap<String, User> users = new HashMap<>();
 
-    public void seed() {
-        add(new User("admin", "admin", Role.ADMIN));
-        add(new User("user", "user", Role.USER));
-    }
 
     public boolean exists(String username) {
         return users.containsKey(username);
