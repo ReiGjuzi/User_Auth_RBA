@@ -1,6 +1,6 @@
-package model;
+package UI;
 
-import java.awt.EventQueue;
+import model.UserStoreFile;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -15,22 +15,15 @@ import java.awt.event.ActionEvent;
 public class Admin_page extends JFrame {
 
 	private static final long serialVersionUID = 1L;
+	private final UserStoreFile store;
+	private final JFrame parent;
 	private JPanel contentPane;
 
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Admin_page frame = new Admin_page();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	public Admin_page(UserStoreFile store, JFrame parent) {
 
-	public Admin_page() {
+		this.store = store;
+		this.parent = parent;
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 487);
 		contentPane = new JPanel();
@@ -112,5 +105,16 @@ public class Admin_page extends JFrame {
 		btnNewButton_7.setBounds(22, 341, 206, 40);
 		contentPane.add(btnNewButton_7);
 
+		btnNewButton.addActionListener(e -> { // Add New User
+			new New_user(store, this).setVisible(true);
+			setVisible(false);
+		});
+
+		btnNewButton_7.addActionListener(e -> { // Go Back to login
+			parent.setVisible(true);
+			dispose();
+		});
 	}
+
+
 }

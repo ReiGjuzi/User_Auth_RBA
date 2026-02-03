@@ -1,4 +1,8 @@
-package model;
+package test;
+import model.Role;
+import model.User;
+import model.UserStoreFile;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -6,8 +10,7 @@ import java.awt.event.ActionListener;
 
 public class UserStoreSwingTest extends JFrame {
 
-    private final UserStore store = new UserStore();
-
+    private final UserStoreFile store = new UserStoreFile();
     private final JTextField usernameField = new JTextField(12);
     private final JTextField passwordField = new JTextField(12);
     private final JLabel status = new JLabel(" ");

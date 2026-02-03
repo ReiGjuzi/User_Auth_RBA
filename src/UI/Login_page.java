@@ -1,7 +1,7 @@
-package model;
+package UI;
 
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
+import model.Role;
+import model.UserStoreFile;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -11,28 +11,20 @@ import java.awt.Color;
 import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JButton;
-import javax.swing.SwingConstants;
 
 public class Login_page extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTextField textField;
+	private JTextField passwordField;
 
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Login_page frame = new Login_page();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	private UserStoreFile store;
 
-	public Login_page() {
+	public Login_page(UserStoreFile store) {
+
+		this.store = store;
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -41,15 +33,27 @@ public class Login_page extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JLabel lblNewLabel_1 = new JLabel("Pleaser Enter your Code here:");
+		JLabel lblNewLabel_1 = new JLabel("Username:");
 		lblNewLabel_1.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		lblNewLabel_1.setForeground(new Color(255, 255, 255));
 		lblNewLabel_1.setBounds(117, 82, 210, 14);
 		contentPane.add(lblNewLabel_1);
+
+		JLabel lblPassword = new JLabel("Password:");
+		lblPassword.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		lblPassword.setForeground(Color.WHITE);
+		lblPassword.setBounds(117, 145, 210, 14);
+		contentPane.add(lblPassword);
+
+		passwordField = new JTextField();
+		passwordField.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		passwordField.setBounds(150, 165, 117, 30);
+		contentPane.add(passwordField);
+		passwordField.setColumns(10);
 		
 		JButton btnNewButton = new JButton("Submit");
 		btnNewButton.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		btnNewButton.setBounds(137, 182, 139, 44);
+		btnNewButton.setBounds(137, 215, 139, 44);
 		btnNewButton.setBackground(new Color(0, 0, 0));
 		btnNewButton.setForeground(new Color(255, 255, 255));
 		contentPane.add(btnNewButton);
@@ -60,12 +64,41 @@ public class Login_page extends JFrame {
 		contentPane.add(textField);
 		textField.setColumns(10);
 		
-		JLabel lblNewLabel = new JLabel("Wellcome User");
+		JLabel lblNewLabel = new JLabel("Welcome");
 		lblNewLabel.setForeground(new Color(255, 255, 255));
 		lblNewLabel.setBounds(131, 31, 169, 25);
 		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 24));
 		lblNewLabel.setBackground(new Color(255, 255, 255));
 		contentPane.add(lblNewLabel);
+
+		btnNewButton.addActionListener(e -> {
+			String u = textField.getText().trim();
+			String p = passwordField.getText().trim();
+
+			if (u.isEmpty() || p.isEmpty()) {
+				lblNewLabel_1.setText("Enter username and password");
+				return;
+			}
+
+			if (!store.exists(u)) {
+				lblNewLabel_1.setText("User not found");
+				return;
+			}
+
+			if (!store.get(u).getPassword().equals(p)) {
+				lblNewLabel_1.setText("Wrong password");
+				return;
+			}
+
+			if (store.get(u).getRole() == Role.ADMIN) {
+				new Admin_page(store, this).setVisible(true);
+				setVisible(false);
+			} else {
+				lblNewLabel_1.setText("Logged in as USER: " + u);
+			}
+		});
+
+
 
 	}
 

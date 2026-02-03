@@ -1,6 +1,8 @@
-package model;
+package UI;
 
-import java.awt.EventQueue;
+import model.Role;
+import model.User;
+import model.UserStoreFile;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -25,24 +27,15 @@ public class New_user extends JFrame {
 	private JTextField textField_4;
 	private JTextField textField_5;
 
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					New_user frame = new New_user();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	private final UserStoreFile store;
+	private final JFrame parent;
 
-	/**
-	 * Create the frame.
-	 */
-	public New_user() {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+	public New_user(UserStoreFile store, JFrame parent) {
+        this.store = store;
+        this.parent = parent;
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 510);
 		contentPane = new JPanel();
 		contentPane.setBackground(new Color(0, 0, 0));
@@ -165,6 +158,35 @@ public class New_user extends JFrame {
 		btnNewButton_2.setHorizontalAlignment(SwingConstants.RIGHT);
 		btnNewButton_2.setBounds(363, 327, 35, 23);
 		contentPane.add(btnNewButton_2);
+
+
+		btnNewButton.addActionListener(e -> {
+			String username = textField.getText().trim();
+			String password = textField_5.getText().trim();
+
+			if (username.isEmpty() || password.isEmpty()) {
+				lblNewLabel.setText("Missing username/password");
+				return;
+			}
+			if (store.exists(username)) {
+				lblNewLabel.setText("Username exists");
+				return;
+			}
+
+			String roleStr = comboBox.getSelectedItem().toString();
+			Role role = roleStr.equalsIgnoreCase("Admin") ? Role.ADMIN : Role.USER;
+
+			store.add(new User(username, password, role));
+			lblNewLabel.setText("Created: " + username);
+
+			textField.setText("");
+			textField_5.setText("");
+		});
+
+		btnNewButton_1.addActionListener(e -> {
+			parent.setVisible(true);
+			dispose();
+		});
 
 	}
 }
