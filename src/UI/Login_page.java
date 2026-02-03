@@ -1,5 +1,6 @@
 package UI;
 
+import model.PasswordUtil;
 import model.Role;
 import model.UserStoreFile;
 
@@ -85,7 +86,9 @@ public class Login_page extends JFrame {
 				return;
 			}
 
-			if (!store.get(u).getPassword().equals(p)) {
+			String hashedInput = PasswordUtil.hash(p);
+
+			if (!store.get(u).getPassword().equals(hashedInput)) {
 				lblNewLabel_1.setText("Wrong password");
 				return;
 			}

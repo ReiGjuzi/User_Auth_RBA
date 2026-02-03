@@ -32,6 +32,13 @@ public class UserStoreFile {
         }
     }
 
+    public void seedAdmin() {
+        if (!exists("admin")) {
+            String hashed = PasswordUtil.hash("admin");
+            add(new User("admin", hashed, Role.ADMIN));
+        }
+    }
+
     public void add(User user) {
         try(FileWriter writer = new FileWriter(USERS_FILE, true))
         {

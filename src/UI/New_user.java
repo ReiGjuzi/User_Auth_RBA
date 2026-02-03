@@ -1,5 +1,6 @@
 package UI;
 
+import model.PasswordUtil;
 import model.Role;
 import model.User;
 import model.UserStoreFile;
@@ -162,9 +163,9 @@ public class New_user extends JFrame {
 
 		btnNewButton.addActionListener(e -> {
 			String username = textField.getText().trim();
-			String password = textField_5.getText().trim();
+			String plainPassword = textField_5.getText().trim();
 
-			if (username.isEmpty() || password.isEmpty()) {
+			if (username.isEmpty() || plainPassword.isEmpty()) {
 				lblNewLabel.setText("Missing username/password");
 				return;
 			}
@@ -176,7 +177,9 @@ public class New_user extends JFrame {
 			String roleStr = comboBox.getSelectedItem().toString();
 			Role role = roleStr.equalsIgnoreCase("Admin") ? Role.ADMIN : Role.USER;
 
-			store.add(new User(username, password, role));
+			String hashedPassword = PasswordUtil.hash(plainPassword);
+
+			store.add(new User(username, hashedPassword, role));
 			lblNewLabel.setText("Created: " + username);
 
 			textField.setText("");

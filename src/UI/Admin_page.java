@@ -32,7 +32,7 @@ public class Admin_page extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JLabel lblNewLabel = new JLabel("Wellcome Admin");
+		JLabel lblNewLabel = new JLabel("Welcome Admin");
 		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 24));
 		lblNewLabel.setForeground(new Color(255, 255, 255));
 		lblNewLabel.setBackground(new Color(0, 0, 0));
