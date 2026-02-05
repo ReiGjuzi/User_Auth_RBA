@@ -4,11 +4,37 @@ public class User {
     private  String username;
     private  String password;
     private Role role;
+    private String firstName;
+    private String lastName;
+    private String age;
+    private String gender;
+    private String salary;
+    private UserPermissions permissions;
 
     public User(String username, String password, Role role) {
+        this(username, password, role, "", "", "", "", "", UserPermissions.forRole(role));
+    }
+
+    public User(
+            String username,
+            String password,
+            Role role,
+            String firstName,
+            String lastName,
+            String age,
+            String gender,
+            String salary,
+            UserPermissions permissions
+    ) {
         this.username = username;
         this.password = password;
         this.role = role;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.age = age;
+        this.gender = gender;
+        this.salary = salary;
+        this.permissions = permissions == null ? UserPermissions.forRole(role) : permissions;
     }
 
     public String getUsername() {
@@ -20,6 +46,24 @@ public class User {
     public Role getRole() {
         return role;
     }
+    public String getFirstName() {
+        return firstName;
+    }
+    public String getLastName() {
+        return lastName;
+    }
+    public String getAge() {
+        return age;
+    }
+    public String getGender() {
+        return gender;
+    }
+    public String getSalary() {
+        return salary;
+    }
+    public UserPermissions getPermissions() {
+        return permissions;
+    }
 
     public void setUsername(String username) {
         this.username = username;
@@ -29,5 +73,26 @@ public class User {
     }
     public void setRole(Role role) {
         this.role = role;
+        if (permissions == null) {
+            this.permissions = UserPermissions.forRole(role);
+        }
+    }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    public void setAge(String age) {
+        this.age = age;
+    }
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+    public void setSalary(String salary) {
+        this.salary = salary;
+    }
+    public void setPermissions(UserPermissions permissions) {
+        this.permissions = permissions;
     }
 }

@@ -1,4 +1,5 @@
 package test;
+import model.PasswordUtil;
 import model.Role;
 import model.User;
 import model.UserStoreFile;
@@ -37,7 +38,8 @@ public class UserStoreSwingTest extends JFrame {
                     return;
                 }
 
-                store.add(new User(u, p, Role.USER));
+                String hashed = PasswordUtil.hash(p);
+                store.add(new User(u, hashed, Role.BOX_OFFICE));
                 status.setText("Stored user: " + u);
             }
         });

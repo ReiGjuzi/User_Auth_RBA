@@ -1,7 +1,6 @@
 package UI;
 
-import model.PasswordUtil;
-import model.Role;
+import model.User;
 import model.UserStoreFile;
 
 import javax.swing.JFrame;
@@ -19,6 +18,8 @@ public class Login_page extends JFrame {
 	private JPanel contentPane;
 	private JTextField textField;
 	private JTextField passwordField;
+	private JLabel usernameLabel;
+	private JLabel passwordLabel;
 
 	private UserStoreFile store;
 
@@ -33,18 +34,13 @@ public class Login_page extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
-		JLabel lblNewLabel_1 = new JLabel("Username:");
-		lblNewLabel_1.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		lblNewLabel_1.setForeground(new Color(255, 255, 255));
-		lblNewLabel_1.setBounds(117, 82, 210, 14);
-		contentPane.add(lblNewLabel_1);
 
-		JLabel lblPassword = new JLabel("Password:");
-		lblPassword.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		lblPassword.setForeground(Color.WHITE);
-		lblPassword.setBounds(117, 145, 210, 14);
-		contentPane.add(lblPassword);
+
+		passwordLabel = new JLabel("Code:");
+		passwordLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		passwordLabel.setForeground(Color.WHITE);
+		passwordLabel.setBounds(117, 145, 210, 14);
+		contentPane.add(passwordLabel);
 
 		passwordField = new JTextField();
 		passwordField.setFont(new Font("Tahoma", Font.PLAIN, 15));
@@ -59,12 +55,6 @@ public class Login_page extends JFrame {
 		btnNewButton.setForeground(new Color(255, 255, 255));
 		contentPane.add(btnNewButton);
 		
-		textField = new JTextField();
-		textField.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		textField.setBounds(150, 117, 117, 30);
-		contentPane.add(textField);
-		textField.setColumns(10);
-		
 		JLabel lblNewLabel = new JLabel("Welcome");
 		lblNewLabel.setForeground(new Color(255, 255, 255));
 		lblNewLabel.setBounds(131, 31, 169, 25);
@@ -73,36 +63,28 @@ public class Login_page extends JFrame {
 		contentPane.add(lblNewLabel);
 
 		btnNewButton.addActionListener(e -> {
-			String u = textField.getText().trim();
-			String p = passwordField.getText().trim();
+			String code = passwordField.getText().trim();
 
-			if (u.isEmpty() || p.isEmpty()) {
-				lblNewLabel_1.setText("Enter username and password");
+			if (code.isEmpty()) {
+				usernameLabel.setText("Enter code");
 				return;
 			}
-
-			if (!store.exists(u)) {
-				lblNewLabel_1.setText("User not found");
+			if (!code.matches("\\d{4}")) {
+				usernameLabel.setText("Code must be 4 digits");
 				return;
 			}
-
-			String hashedInput = PasswordUtil.hash(p);
-
-			if (!store.get(u).getPassword().equals(hashedInput)) {
-				lblNewLabel_1.setText("Wrong password");
+			User user = store.findByCode(code);
+			if (user == null) {
+				usernameLabel.setText("Invalid code");
 				return;
 			}
-
-			if (store.get(u).getRole() == Role.ADMIN) {
+			if (user.getRole().isAdmin()) {
 				new Admin_page(store, this).setVisible(true);
-				setVisible(false);
 			} else {
-				new Employee_page(u, this).setVisible(true);
-				setVisible(false);
+				new Employee_page(user, this).setVisible(true);
 			}
+			setVisible(false);
 		});
-
-
 
 	}
 

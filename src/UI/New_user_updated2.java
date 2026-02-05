@@ -1,10 +1,13 @@
 package UI;
 
 import java.awt.EventQueue;
+import java.security.SecureRandom;
 
+import model.AccessLevel;
 import model.PasswordUtil;
 import model.Role;
 import model.User;
+import model.UserPermissions;
 import model.UserStoreFile;
 
 import javax.swing.JFrame;
@@ -24,6 +27,8 @@ public class New_user_updated2 extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private final UserStoreFile store;
 	private final JFrame parent;
+	private final SecureRandom random = new SecureRandom();
+	private boolean adjustingPermissions;
 	private JPanel contentPane;
 	private JTextField textField;
 	private JTextField textField_1;
@@ -31,6 +36,15 @@ public class New_user_updated2 extends JFrame {
 	private JTextField textField_3;
 	private JTextField textField_4;
 	private JTextField textField_5;
+	private JComboBox roleComboBox;
+	private PermissionRow createOrderRow;
+	private PermissionRow editOrderRow;
+	private PermissionRow confirmPurchaseRow;
+	private PermissionRow deletePurchaseRow;
+	private PermissionRow editShowNameRow;
+	private PermissionRow editShowInfoRow;
+	private PermissionRow addShowRow;
+	private PermissionRow deleteShowRow;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -151,11 +165,11 @@ public class New_user_updated2 extends JFrame {
 		contentPane.add(textField_3);
 		textField_3.setColumns(10);
 		
-		JComboBox comboBox = new JComboBox();
-		comboBox.setModel(new DefaultComboBoxModel(new String[] {"Admin", "Employee1", "Employye2", "Employee3"}));
-		comboBox.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		comboBox.setBounds(106, 245, 292, 22);
-		contentPane.add(comboBox);
+		roleComboBox = new JComboBox();
+		roleComboBox.setModel(new DefaultComboBoxModel(buildRoleDisplayNames()));
+		roleComboBox.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		roleComboBox.setBounds(106, 245, 292, 22);
+		contentPane.add(roleComboBox);
 		
 		textField_4 = new JTextField();
 		textField_4.setFont(new Font("Tahoma", Font.PLAIN, 15));
@@ -402,27 +416,84 @@ public class New_user_updated2 extends JFrame {
 		chckbxNewCheckBox_3_1_1_1_1_3_3.setBounds(356, 672, 21, 23);
 		contentPane.add(chckbxNewCheckBox_3_1_1_1_1_3_3);
 
+		createOrderRow = new PermissionRow(chckbxNewCheckBox, chckbxNewCheckBox_1, chckbxNewCheckBox_2);
+		editOrderRow = new PermissionRow(chckbxNewCheckBox_3, chckbxNewCheckBox_4, chckbxNewCheckBox_5);
+		confirmPurchaseRow = new PermissionRow(chckbxNewCheckBox_3_1, chckbxNewCheckBox_3_2, chckbxNewCheckBox_3_3);
+		deletePurchaseRow = new PermissionRow(chckbxNewCheckBox_3_1_1, chckbxNewCheckBox_3_1_2, chckbxNewCheckBox_3_1_3);
+		editShowNameRow = new PermissionRow(chckbxNewCheckBox_3_1_1_1, chckbxNewCheckBox_3_1_1_2, chckbxNewCheckBox_3_1_1_3);
+		editShowInfoRow = new PermissionRow(chckbxNewCheckBox_3_1_1_1_1, chckbxNewCheckBox_3_1_1_1_1_1, chckbxNewCheckBox_3_1_1_1_1_2);
+		addShowRow = new PermissionRow(chckbxNewCheckBox_3_1_1_1_1_3, chckbxNewCheckBox_3_1_1_1_1_1_1, chckbxNewCheckBox_3_1_1_1_1_1_2);
+		deleteShowRow = new PermissionRow(chckbxNewCheckBox_3_1_1_1_1_3_1, chckbxNewCheckBox_3_1_1_1_1_3_2, chckbxNewCheckBox_3_1_1_1_1_3_3);
+
+		bindRow(createOrderRow);
+		bindRow(editOrderRow);
+		bindRow(confirmPurchaseRow);
+		bindRow(deletePurchaseRow);
+		bindRow(editShowNameRow);
+		bindRow(editShowInfoRow);
+		bindRow(addShowRow);
+		bindRow(deleteShowRow);
+
+		applyRoleSelection(Role.fromDisplayName(roleComboBox.getSelectedItem().toString()));
+
+		roleComboBox.addActionListener(e -> {
+			Role role = Role.fromDisplayName(roleComboBox.getSelectedItem().toString());
+			applyRoleSelection(role);
+		});
+
+		btnNewButton_2.addActionListener(e -> {
+			Role role = Role.fromDisplayName(roleComboBox.getSelectedItem().toString());
+			textField_5.setText(generateCode(role));
+		});
+
 		btnNewButton.addActionListener(e -> {
 			String username = textField.getText().trim();
-			String plainPassword = textField_5.getText().trim();
+			String surname = textField_1.getText().trim();
+			String age = textField_2.getText().trim();
+			String gender = textField_3.getText().trim();
+			String salary = textField_4.getText().trim();
+			String code = textField_5.getText().trim();
 
-			if (username.isEmpty() || plainPassword.isEmpty()) {
-				lblNewLabel.setText("Missing username/password");
+			if (username.isEmpty()) {
+				lblNewLabel.setText("Missing name");
+				return;
+			}
+			if (code.isEmpty()) {
+				lblNewLabel.setText("Missing code");
+				return;
+			}
+			if (!code.matches("\\d{4}")) {
+				lblNewLabel.setText("Code must be 4 digits");
 				return;
 			}
 			if (store.exists(username)) {
 				lblNewLabel.setText("Username exists");
 				return;
 			}
+			if (store.codeExists(code)) {
+				lblNewLabel.setText("Code already used");
+				return;
+			}
 
-			String roleStr = comboBox.getSelectedItem().toString();
-			Role role = roleStr.equalsIgnoreCase("Admin") ? Role.ADMIN : Role.USER;
+			Role role = Role.fromDisplayName(roleComboBox.getSelectedItem().toString());
+			if (code.charAt(0) != role.getCodePrefix()) {
+				lblNewLabel.setText("Code must start with " + role.getCodePrefix());
+				return;
+			}
 
-			String hashedPassword = PasswordUtil.hash(plainPassword);
-			store.add(new User(username, hashedPassword, role));
+			UserPermissions permissions = role == Role.CUSTOM
+					? readPermissionsFromRows()
+					: UserPermissions.forRole(role);
+
+			String hashedCode = PasswordUtil.hash(code);
+			store.add(new User(username, hashedCode, role, username, surname, age, gender, salary, permissions));
 			lblNewLabel.setText("Created: " + username);
 
 			textField.setText("");
+			textField_1.setText("");
+			textField_2.setText("");
+			textField_3.setText("");
+			textField_4.setText("");
 			textField_5.setText("");
 		});
 
@@ -432,5 +503,144 @@ public class New_user_updated2 extends JFrame {
 			}
 			dispose();
 		});
+	}
+
+	private void bindRow(PermissionRow row) {
+		row.none.setSelected(true);
+		row.none.addActionListener(e -> {
+			if (adjustingPermissions) {
+				return;
+			}
+			adjustingPermissions = true;
+			if (row.none.isSelected()) {
+				row.read.setSelected(false);
+				row.write.setSelected(false);
+			}
+			adjustingPermissions = false;
+		});
+
+		row.read.addActionListener(e -> syncRowSelection(row));
+		row.write.addActionListener(e -> syncRowSelection(row));
+	}
+
+	private void applyRoleSelection(Role role) {
+		if (role == Role.CUSTOM) {
+			setPermissionRowsEnabled(true);
+			setPermissionsOnRows(UserPermissions.none());
+			return;
+		}
+		setPermissionsOnRows(UserPermissions.forRole(role));
+		setPermissionRowsEnabled(false);
+	}
+
+	private void setPermissionRowsEnabled(boolean enabled) {
+		setRowEnabled(createOrderRow, enabled);
+		setRowEnabled(editOrderRow, enabled);
+		setRowEnabled(confirmPurchaseRow, enabled);
+		setRowEnabled(deletePurchaseRow, enabled);
+		setRowEnabled(editShowNameRow, enabled);
+		setRowEnabled(editShowInfoRow, enabled);
+		setRowEnabled(addShowRow, enabled);
+		setRowEnabled(deleteShowRow, enabled);
+	}
+
+	private void setRowEnabled(PermissionRow row, boolean enabled) {
+		row.read.setEnabled(enabled);
+		row.write.setEnabled(enabled);
+		row.none.setEnabled(enabled);
+	}
+
+	private void setPermissionsOnRows(UserPermissions permissions) {
+		setRowLevel(createOrderRow, permissions.getCreateOrder());
+		setRowLevel(editOrderRow, permissions.getEditOrder());
+		setRowLevel(confirmPurchaseRow, permissions.getConfirmPurchase());
+		setRowLevel(deletePurchaseRow, permissions.getDeletePurchase());
+		setRowLevel(editShowNameRow, permissions.getEditShowName());
+		setRowLevel(editShowInfoRow, permissions.getEditShowInfo());
+		setRowLevel(addShowRow, permissions.getAddShow());
+		setRowLevel(deleteShowRow, permissions.getDeleteShow());
+	}
+
+	private UserPermissions readPermissionsFromRows() {
+		return new UserPermissions(
+				getRowLevel(createOrderRow),
+				getRowLevel(editOrderRow),
+				getRowLevel(confirmPurchaseRow),
+				getRowLevel(deletePurchaseRow),
+				getRowLevel(editShowNameRow),
+				getRowLevel(editShowInfoRow),
+				getRowLevel(addShowRow),
+				getRowLevel(deleteShowRow)
+		);
+	}
+
+	private void setRowLevel(PermissionRow row, AccessLevel level) {
+		adjustingPermissions = true;
+		row.read.setSelected(level == AccessLevel.READ || level == AccessLevel.READ_WRITE);
+		row.write.setSelected(level == AccessLevel.WRITE || level == AccessLevel.READ_WRITE);
+		row.none.setSelected(level == AccessLevel.NONE);
+		adjustingPermissions = false;
+	}
+
+	private AccessLevel getRowLevel(PermissionRow row) {
+		if (row.none.isSelected()) {
+			return AccessLevel.NONE;
+		}
+		boolean read = row.read.isSelected();
+		boolean write = row.write.isSelected();
+		if (read && write) {
+			return AccessLevel.READ_WRITE;
+		}
+		if (write) {
+			return AccessLevel.WRITE;
+		}
+		if (read) {
+			return AccessLevel.READ;
+		}
+		return AccessLevel.NONE;
+	}
+
+	private void syncRowSelection(PermissionRow row) {
+		if (adjustingPermissions) {
+			return;
+		}
+		adjustingPermissions = true;
+		boolean read = row.read.isSelected();
+		boolean write = row.write.isSelected();
+		row.none.setSelected(!read && !write);
+		adjustingPermissions = false;
+	}
+
+	private String generateCode(Role role) {
+		char prefix = role == null ? Role.CUSTOM.getCodePrefix() : role.getCodePrefix();
+		for (int attempt = 0; attempt < 1000; attempt++) {
+			int suffix = random.nextInt(1000);
+			String code = prefix + String.format("%03d", suffix);
+			if (!store.codeExists(code)) {
+				return code;
+			}
+		}
+		return prefix + String.format("%03d", random.nextInt(1000));
+	}
+
+	private String[] buildRoleDisplayNames() {
+		Role[] roles = Role.selectableRoles();
+		String[] names = new String[roles.length];
+		for (int i = 0; i < roles.length; i++) {
+			names[i] = roles[i].getDisplayName();
+		}
+		return names;
+	}
+
+	private static class PermissionRow {
+		private final JCheckBox read;
+		private final JCheckBox write;
+		private final JCheckBox none;
+
+		private PermissionRow(JCheckBox read, JCheckBox write, JCheckBox none) {
+			this.read = read;
+			this.write = write;
+			this.none = none;
+		}
 	}
 }
