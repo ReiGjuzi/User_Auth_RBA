@@ -97,7 +97,8 @@ public class Login_page extends JFrame {
 				new Admin_page(store, this).setVisible(true);
 				setVisible(false);
 			} else {
-				lblNewLabel_1.setText("Logged in as USER: " + u);
+				new Employee_page(u, this).setVisible(true);
+				setVisible(false);
 			}
 		});
 

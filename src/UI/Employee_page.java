@@ -18,6 +18,8 @@ import java.awt.Color;
 public class Employee_page extends JFrame {
 
 	private static final long serialVersionUID = 1L;
+	private final JFrame parent;
+	private final String username;
 	private JPanel contentPane;
 	private JTextField textField;
 	private JTextField textField_1;
@@ -31,7 +33,7 @@ public class Employee_page extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Employee_page frame = new Employee_page();
+					Employee_page frame = new Employee_page("Employee", null);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -41,7 +43,10 @@ public class Employee_page extends JFrame {
 	}
 
 
-	public Employee_page() {
+	public Employee_page(String username, JFrame parent) {
+		this.username = username;
+		this.parent = parent;
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 553, 565);
 		contentPane = new JPanel();
@@ -51,7 +56,7 @@ public class Employee_page extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JLabel lblNewLabel = new JLabel("Name Surname\r\n");
+		JLabel lblNewLabel = new JLabel(username == null || username.isEmpty() ? "Employee" : username);
 		lblNewLabel.setForeground(new Color(255, 255, 255));
 		lblNewLabel.setBackground(new Color(0, 0, 0));
 		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 24));
@@ -242,5 +247,11 @@ public class Employee_page extends JFrame {
 		btnNewButton_2.setBounds(438, 20, 89, 23);
 		contentPane.add(btnNewButton_2);
 
+		btnNewButton_2.addActionListener(e -> {
+			if (parent != null) {
+				parent.setVisible(true);
+			}
+			dispose();
+		});
 	}
 }

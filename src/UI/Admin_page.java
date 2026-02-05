@@ -106,7 +106,7 @@ public class Admin_page extends JFrame {
 		contentPane.add(btnNewButton_7);
 
 		btnNewButton.addActionListener(e -> { // Add New User
-			new New_user(store, this).setVisible(true);
+			new New_user_updated2(store, this).setVisible(true);
 			setVisible(false);
 		});
 

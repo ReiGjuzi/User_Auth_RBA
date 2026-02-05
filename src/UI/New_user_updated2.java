@@ -2,6 +2,11 @@ package UI;
 
 import java.awt.EventQueue;
 
+import model.PasswordUtil;
+import model.Role;
+import model.User;
+import model.UserStoreFile;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -17,6 +22,8 @@ import javax.swing.JCheckBox;
 
 public class New_user_updated2 extends JFrame {
 	private static final long serialVersionUID = 1L;
+	private final UserStoreFile store;
+	private final JFrame parent;
 	private JPanel contentPane;
 	private JTextField textField;
 	private JTextField textField_1;
@@ -29,7 +36,7 @@ public class New_user_updated2 extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					New_user_updated2 frame = new New_user_updated2();
+					New_user_updated2 frame = new New_user_updated2(new UserStoreFile(), null);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -39,7 +46,10 @@ public class New_user_updated2 extends JFrame {
 	}
 
 
-	public New_user_updated2() {
+	public New_user_updated2(UserStoreFile store, JFrame parent) {
+		this.store = store;
+		this.parent = parent;
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 943);
 		contentPane = new JPanel();
@@ -392,5 +402,35 @@ public class New_user_updated2 extends JFrame {
 		chckbxNewCheckBox_3_1_1_1_1_3_3.setBounds(356, 672, 21, 23);
 		contentPane.add(chckbxNewCheckBox_3_1_1_1_1_3_3);
 
+		btnNewButton.addActionListener(e -> {
+			String username = textField.getText().trim();
+			String plainPassword = textField_5.getText().trim();
+
+			if (username.isEmpty() || plainPassword.isEmpty()) {
+				lblNewLabel.setText("Missing username/password");
+				return;
+			}
+			if (store.exists(username)) {
+				lblNewLabel.setText("Username exists");
+				return;
+			}
+
+			String roleStr = comboBox.getSelectedItem().toString();
+			Role role = roleStr.equalsIgnoreCase("Admin") ? Role.ADMIN : Role.USER;
+
+			String hashedPassword = PasswordUtil.hash(plainPassword);
+			store.add(new User(username, hashedPassword, role));
+			lblNewLabel.setText("Created: " + username);
+
+			textField.setText("");
+			textField_5.setText("");
+		});
+
+		btnNewButton_1.addActionListener(e -> {
+			if (parent != null) {
+				parent.setVisible(true);
+			}
+			dispose();
+		});
 	}
 }
