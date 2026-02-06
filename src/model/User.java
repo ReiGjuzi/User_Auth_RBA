@@ -1,5 +1,7 @@
 package model;
 
+import security.UserPermissions;
+
 public class User {
     private  String username;
     private  String password;

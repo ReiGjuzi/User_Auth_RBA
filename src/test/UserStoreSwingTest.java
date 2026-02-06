@@ -1,5 +1,5 @@
 package test;
-import model.PasswordUtil;
+import security.PasswordUtil;
 import model.Role;
 import model.User;
 import model.UserStoreFile;

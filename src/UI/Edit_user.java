@@ -89,7 +89,7 @@ public class Edit_user extends JFrame {
                 refreshUsers();
                 return;
             }
-            new New_user_updated2(store, this, user).setVisible(true);
+            new New_user(store, this, user).setVisible(true);
             setVisible(false);
         });
 

@@ -2,9 +2,11 @@ package UI;
 
 import java.awt.EventQueue;
 
-import model.AccessLevel;
+import security.AccessLevel;
+import security.Authorization;
+import security.Permission;
 import model.User;
-import model.UserPermissions;
+import security.UserPermissions;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -18,6 +20,7 @@ import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import java.awt.Color;
+import javax.swing.JOptionPane;
 
 public class Employee_page extends JFrame {
 
@@ -44,21 +47,6 @@ public class Employee_page extends JFrame {
 	private JButton orderSlot2Button;
 	private JButton confirmPurchaseButton;
 	private JButton deleteOrderButton;
-
-
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Employee_page frame = new Employee_page(new User("Employee", "", model.Role.BOX_OFFICE), null);
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
 
 	public Employee_page(User user, JFrame parent) {
 		this.user = user;
@@ -275,11 +263,40 @@ public class Employee_page extends JFrame {
 				? UserPermissions.none()
 				: user.getPermissions();
 		applyPermissions(permissions);
+
+		saveOrderButton.addActionListener(e -> {
+			if (!requirePermission(Permission.CREATE_ORDER, AccessLevel.WRITE)) {
+				return;
+			}
+		});
+
+		orderSlot1Button.addActionListener(e -> {
+			if (!requirePermission(Permission.EDIT_ORDER, AccessLevel.WRITE)) {
+				return;
+			}
+		});
+
+		orderSlot2Button.addActionListener(e -> {
+			if (!requirePermission(Permission.EDIT_ORDER, AccessLevel.WRITE)) {
+				return;
+			}
+		});
+
+		confirmPurchaseButton.addActionListener(e -> {
+			if (!requirePermission(Permission.CONFIRM_PURCHASE, AccessLevel.WRITE)) {
+				return;
+			}
+		});
+
+		deleteOrderButton.addActionListener(e -> {
+			if (!requirePermission(Permission.DELETE_PURCHASE, AccessLevel.WRITE)) {
+				return;
+			}
+		});
 	}
 
 	private void applyPermissions(UserPermissions permissions) {
-		AccessLevel createOrder = permissions.getCreateOrder();
-		boolean createEnabled = createOrder != AccessLevel.NONE;
+		boolean createEnabled = Authorization.hasAnyAccess(permissions, Permission.CREATE_ORDER);
 		showComboBox.setEnabled(createEnabled);
 		hallComboBox.setEnabled(createEnabled);
 		timeField.setEnabled(createEnabled);
@@ -288,25 +305,22 @@ public class Employee_page extends JFrame {
 		ticketPriceField.setEnabled(createEnabled);
 		ticketQuantityField.setEnabled(createEnabled);
 		totalPriceField.setEnabled(createEnabled);
-		boolean createWrite = createOrder == AccessLevel.WRITE || createOrder == AccessLevel.READ_WRITE;
+		boolean createWrite = Authorization.can(permissions, Permission.CREATE_ORDER, AccessLevel.WRITE);
 		quantityPlusButton.setEnabled(createWrite);
 		quantityMinusButton.setEnabled(createWrite);
 		saveOrderButton.setEnabled(createWrite);
 
-		boolean editWrite = permissions.getEditOrder() == AccessLevel.WRITE
-				|| permissions.getEditOrder() == AccessLevel.READ_WRITE;
+		boolean editWrite = Authorization.can(permissions, Permission.EDIT_ORDER, AccessLevel.WRITE);
 		orderSlot1Button.setEnabled(editWrite);
 		orderSlot2Button.setEnabled(editWrite);
 
-		confirmPurchaseButton.setEnabled(permissions.getConfirmPurchase() == AccessLevel.WRITE
-				|| permissions.getConfirmPurchase() == AccessLevel.READ_WRITE);
-		deleteOrderButton.setEnabled(permissions.getDeletePurchase() == AccessLevel.WRITE
-				|| permissions.getDeletePurchase() == AccessLevel.READ_WRITE);
+		confirmPurchaseButton.setEnabled(Authorization.can(permissions, Permission.CONFIRM_PURCHASE, AccessLevel.WRITE));
+		deleteOrderButton.setEnabled(Authorization.can(permissions, Permission.DELETE_PURCHASE, AccessLevel.WRITE));
 
-		boolean showAccess = permissions.getEditShowName() != AccessLevel.NONE
-				|| permissions.getEditShowInfo() != AccessLevel.NONE
-				|| permissions.getAddShow() != AccessLevel.NONE
-				|| permissions.getDeleteShow() != AccessLevel.NONE;
+		boolean showAccess = Authorization.hasAnyAccess(permissions, Permission.EDIT_SHOW_NAME)
+				|| Authorization.hasAnyAccess(permissions, Permission.EDIT_SHOW_INFO)
+				|| Authorization.hasAnyAccess(permissions, Permission.ADD_SHOW)
+				|| Authorization.hasAnyAccess(permissions, Permission.DELETE_SHOW);
 		int changesIndex = tabbedPane.indexOfComponent(changesPanel);
 		if (changesIndex >= 0) {
 			tabbedPane.setEnabledAt(changesIndex, showAccess);
@@ -330,5 +344,13 @@ public class Employee_page extends JFrame {
 		}
 		String username = user.getUsername();
 		return username == null || username.isEmpty() ? "Employee" : username;
+	}
+
+	private boolean requirePermission(Permission permission, AccessLevel required) {
+		if (Authorization.can(user, permission, required)) {
+			return true;
+		}
+		JOptionPane.showMessageDialog(this, "You don't have permission for this action.");
+		return false;
 	}
 }

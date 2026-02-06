@@ -1,5 +1,8 @@
 package model;
 
+import security.PasswordUtil;
+import security.UserPermissions;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -15,6 +18,17 @@ public class UserStoreFile {
 
     public boolean exists(String username) {
         return get(username) != null;
+    }
+
+    public User authenticate(String username, String code) {
+        if (username == null || code == null) {
+            return null;
+        }
+        User user = get(username);
+        if (user == null) {
+            return null;
+        }
+        return PasswordUtil.matches(code, user.getPassword()) ? user : null;
     }
 
     public User get(String username) {

@@ -20,6 +20,7 @@ public class Login_page extends JFrame {
 	private JTextField passwordField;
 	private JLabel usernameLabel;
 	private JLabel passwordLabel;
+	private JLabel statusLabel;
 
 	private UserStoreFile store;
 
@@ -35,6 +36,23 @@ public class Login_page extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
+		statusLabel = new JLabel(" ");
+		statusLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		statusLabel.setForeground(Color.WHITE);
+		statusLabel.setBounds(117, 65, 210, 14);
+		contentPane.add(statusLabel);
+
+		usernameLabel = new JLabel("Username:");
+		usernameLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		usernameLabel.setForeground(Color.WHITE);
+		usernameLabel.setBounds(117, 95, 210, 14);
+		contentPane.add(usernameLabel);
+
+		textField = new JTextField();
+		textField.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		textField.setBounds(150, 115, 117, 30);
+		contentPane.add(textField);
+		textField.setColumns(10);
 
 		passwordLabel = new JLabel("Code:");
 		passwordLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
@@ -63,21 +81,27 @@ public class Login_page extends JFrame {
 		contentPane.add(lblNewLabel);
 
 		btnNewButton.addActionListener(e -> {
+			String username = textField.getText().trim();
 			String code = passwordField.getText().trim();
 
+			if (username.isEmpty()) {
+				statusLabel.setText("Enter username");
+				return;
+			}
 			if (code.isEmpty()) {
-				usernameLabel.setText("Enter code");
+				statusLabel.setText("Enter code");
 				return;
 			}
 			if (!code.matches("\\d{4}")) {
-				usernameLabel.setText("Code must be 4 digits");
+				statusLabel.setText("Code must be 4 digits");
 				return;
 			}
-			User user = store.findByCode(code);
+			User user = store.authenticate(username, code);
 			if (user == null) {
-				usernameLabel.setText("Invalid code");
+				statusLabel.setText("Invalid credentials");
 				return;
 			}
+			statusLabel.setText(" ");
 			if (user.getRole().isAdmin()) {
 				new Admin_page(store, this).setVisible(true);
 			} else {
