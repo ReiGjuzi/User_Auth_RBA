@@ -2,6 +2,8 @@ package UI;
 
 import java.awt.EventQueue;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 
 import model.AccessLevel;
 import model.PasswordUtil;
@@ -28,8 +30,12 @@ public class New_user_updated2 extends JFrame {
 	private final UserStoreFile store;
 	private final JFrame parent;
 	private final SecureRandom random = new SecureRandom();
+	private final boolean editing;
+	private User currentUser;
 	private boolean adjustingPermissions;
 	private JPanel contentPane;
+	private JLabel titleLabel;
+	private JLabel codeLabel;
 	private JTextField textField;
 	private JTextField textField_1;
 	private JTextField textField_2;
@@ -37,6 +43,7 @@ public class New_user_updated2 extends JFrame {
 	private JTextField textField_4;
 	private JTextField textField_5;
 	private JComboBox roleComboBox;
+	private JButton saveButton;
 	private PermissionRow createOrderRow;
 	private PermissionRow editOrderRow;
 	private PermissionRow confirmPurchaseRow;
@@ -61,8 +68,14 @@ public class New_user_updated2 extends JFrame {
 
 
 	public New_user_updated2(UserStoreFile store, JFrame parent) {
+		this(store, parent, null);
+	}
+
+	public New_user_updated2(UserStoreFile store, JFrame parent, User user) {
 		this.store = store;
 		this.parent = parent;
+		this.currentUser = user;
+		this.editing = user != null;
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 943);
@@ -72,12 +85,12 @@ public class New_user_updated2 extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JLabel lblNewLabel = new JLabel("Register User");
-		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 24));
-		lblNewLabel.setBackground(new Color(0, 0, 0));
-		lblNewLabel.setForeground(new Color(255, 255, 255));
-		lblNewLabel.setBounds(136, 11, 158, 37);
-		contentPane.add(lblNewLabel);
+		titleLabel = new JLabel(editing ? "Edit User" : "Register User");
+		titleLabel.setFont(new Font("Tahoma", Font.PLAIN, 24));
+		titleLabel.setBackground(new Color(0, 0, 0));
+		titleLabel.setForeground(new Color(255, 255, 255));
+		titleLabel.setBounds(136, 11, 158, 37);
+		contentPane.add(titleLabel);
 		
 		JLabel lblNewLabel_1 = new JLabel("Name :");
 		lblNewLabel_1.setFont(new Font("Tahoma", Font.PLAIN, 15));
@@ -121,19 +134,19 @@ public class New_user_updated2 extends JFrame {
 		lblNewLabel_6.setBounds(25, 721, 55, 19);
 		contentPane.add(lblNewLabel_6);
 		
-		JLabel lblNewLabel_7 = new JLabel("Code :");
-		lblNewLabel_7.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		lblNewLabel_7.setBackground(new Color(0, 0, 0));
-		lblNewLabel_7.setForeground(new Color(255, 255, 255));
-		lblNewLabel_7.setBounds(25, 762, 46, 14);
-		contentPane.add(lblNewLabel_7);
+		codeLabel = new JLabel(editing ? "New Code :" : "Code :");
+		codeLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		codeLabel.setBackground(new Color(0, 0, 0));
+		codeLabel.setForeground(new Color(255, 255, 255));
+		codeLabel.setBounds(25, 762, 80, 14);
+		contentPane.add(codeLabel);
 		
-		JButton btnNewButton = new JButton("Create User");
-		btnNewButton.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		btnNewButton.setBackground(new Color(0, 0, 0));
-		btnNewButton.setForeground(new Color(255, 255, 255));
-		btnNewButton.setBounds(153, 806, 114, 37);
-		contentPane.add(btnNewButton);
+		saveButton = new JButton(editing ? "Save Changes" : "Create User");
+		saveButton.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		saveButton.setBackground(new Color(0, 0, 0));
+		saveButton.setForeground(new Color(255, 255, 255));
+		saveButton.setBounds(153, 806, 140, 37);
+		contentPane.add(saveButton);
 		
 		JButton btnNewButton_1 = new JButton("<- Go Back");
 		btnNewButton_1.setBackground(new Color(0, 0, 0));
@@ -434,7 +447,24 @@ public class New_user_updated2 extends JFrame {
 		bindRow(addShowRow);
 		bindRow(deleteShowRow);
 
+		if (editing && currentUser != null) {
+			textField.setText(currentUser.getUsername());
+			textField_1.setText(currentUser.getLastName());
+			textField_2.setText(currentUser.getAge());
+			textField_3.setText(currentUser.getGender());
+			textField_4.setText(currentUser.getSalary());
+			if (currentUser.getRole() != null) {
+				roleComboBox.setSelectedItem(currentUser.getRole().getDisplayName());
+			}
+		}
+
 		applyRoleSelection(Role.fromDisplayName(roleComboBox.getSelectedItem().toString()));
+
+		if (editing && currentUser != null && currentUser.getRole() == Role.CUSTOM) {
+			if (currentUser.getPermissions() != null) {
+				setPermissionsOnRows(currentUser.getPermissions());
+			}
+		}
 
 		roleComboBox.addActionListener(e -> {
 			Role role = Role.fromDisplayName(roleComboBox.getSelectedItem().toString());
@@ -446,7 +476,7 @@ public class New_user_updated2 extends JFrame {
 			textField_5.setText(generateCode(role));
 		});
 
-		btnNewButton.addActionListener(e -> {
+		saveButton.addActionListener(e -> {
 			String username = textField.getText().trim();
 			String surname = textField_1.getText().trim();
 			String age = textField_2.getText().trim();
@@ -455,46 +485,84 @@ public class New_user_updated2 extends JFrame {
 			String code = textField_5.getText().trim();
 
 			if (username.isEmpty()) {
-				lblNewLabel.setText("Missing name");
-				return;
-			}
-			if (code.isEmpty()) {
-				lblNewLabel.setText("Missing code");
-				return;
-			}
-			if (!code.matches("\\d{4}")) {
-				lblNewLabel.setText("Code must be 4 digits");
-				return;
-			}
-			if (store.exists(username)) {
-				lblNewLabel.setText("Username exists");
-				return;
-			}
-			if (store.codeExists(code)) {
-				lblNewLabel.setText("Code already used");
+				titleLabel.setText("Missing name");
 				return;
 			}
 
 			Role role = Role.fromDisplayName(roleComboBox.getSelectedItem().toString());
-			if (code.charAt(0) != role.getCodePrefix()) {
-				lblNewLabel.setText("Code must start with " + role.getCodePrefix());
-				return;
+			String hashedCode = null;
+
+			if (editing) {
+				if (!code.isEmpty()) {
+					if (!code.matches("\\d{4}")) {
+						titleLabel.setText("Code must be 4 digits");
+						return;
+					}
+					if (store.codeInUseByOther(code, currentUser.getUsername())) {
+						titleLabel.setText("Code already used");
+						return;
+					}
+					if (code.charAt(0) != role.getCodePrefix()) {
+						titleLabel.setText("Code must start with " + role.getCodePrefix());
+						return;
+					}
+					hashedCode = PasswordUtil.hash(code);
+				} else {
+					hashedCode = currentUser.getPassword();
+				}
+				if (!username.equals(currentUser.getUsername()) && store.exists(username)) {
+					titleLabel.setText("Username exists");
+					return;
+				}
+			} else {
+				if (code.isEmpty()) {
+					titleLabel.setText("Missing code");
+					return;
+				}
+				if (!code.matches("\\d{4}")) {
+					titleLabel.setText("Code must be 4 digits");
+					return;
+				}
+				if (store.exists(username)) {
+					titleLabel.setText("Username exists");
+					return;
+				}
+				if (store.codeExists(code)) {
+					titleLabel.setText("Code already used");
+					return;
+				}
+				if (code.charAt(0) != role.getCodePrefix()) {
+					titleLabel.setText("Code must start with " + role.getCodePrefix());
+					return;
+				}
+				hashedCode = PasswordUtil.hash(code);
 			}
 
 			UserPermissions permissions = role == Role.CUSTOM
 					? readPermissionsFromRows()
 					: UserPermissions.forRole(role);
 
-			String hashedCode = PasswordUtil.hash(code);
-			store.add(new User(username, hashedCode, role, username, surname, age, gender, salary, permissions));
-			lblNewLabel.setText("Created: " + username);
+			User updatedUser = new User(username, hashedCode, role, username, surname, age, gender, salary, permissions);
+			if (editing) {
+				String existingUsername = currentUser.getUsername();
+				if (!store.update(existingUsername, updatedUser)) {
+					titleLabel.setText("User not found");
+					return;
+				}
+				currentUser = updatedUser;
+				textField_5.setText("");
+				titleLabel.setText("Updated: " + username);
+			} else {
+				store.add(updatedUser);
+				titleLabel.setText("Created: " + username);
 
-			textField.setText("");
-			textField_1.setText("");
-			textField_2.setText("");
-			textField_3.setText("");
-			textField_4.setText("");
-			textField_5.setText("");
+				textField.setText("");
+				textField_1.setText("");
+				textField_2.setText("");
+				textField_3.setText("");
+				textField_4.setText("");
+				textField_5.setText("");
+			}
 		});
 
 		btnNewButton_1.addActionListener(e -> {
@@ -625,9 +693,25 @@ public class New_user_updated2 extends JFrame {
 
 	private String[] buildRoleDisplayNames() {
 		Role[] roles = Role.selectableRoles();
-		String[] names = new String[roles.length];
-		for (int i = 0; i < roles.length; i++) {
-			names[i] = roles[i].getDisplayName();
+		List<Role> roleList = new ArrayList<>();
+		for (Role role : roles) {
+			roleList.add(role);
+		}
+		if (editing && currentUser != null && currentUser.getRole() != null) {
+			boolean found = false;
+			for (Role role : roleList) {
+				if (role == currentUser.getRole()) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				roleList.add(currentUser.getRole());
+			}
+		}
+		String[] names = new String[roleList.size()];
+		for (int i = 0; i < roleList.size(); i++) {
+			names[i] = roleList.get(i).getDisplayName();
 		}
 		return names;
 	}

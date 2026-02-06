@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 
 public class UserStoreFile {
@@ -63,6 +64,37 @@ public class UserStoreFile {
 
     }
 
+    public boolean update(String username, User updatedUser) {
+        if (username == null || updatedUser == null) {
+            return false;
+        }
+        List<User> users = loadAll();
+        boolean updated = false;
+        for (int i = 0; i < users.size(); i++) {
+            if (username.equals(users.get(i).getUsername())) {
+                users.set(i, updatedUser);
+                updated = true;
+                break;
+            }
+        }
+        if (!updated) {
+            return false;
+        }
+        return writeAll(users);
+    }
+
+    public boolean delete(String username) {
+        if (username == null) {
+            return false;
+        }
+        List<User> users = loadAll();
+        boolean removed = users.removeIf(user -> username.equals(user.getUsername()));
+        if (!removed) {
+            return false;
+        }
+        return writeAll(users);
+    }
+
     public Collection<User> getAll() {
         try {
             if (!USERS_FILE.exists()) return new ArrayList<>();
@@ -104,6 +136,28 @@ public class UserStoreFile {
         return findByCode(code) != null;
     }
 
+    public boolean codeInUseByOther(String code, String username) {
+        if (code == null || code.isEmpty()) {
+            return false;
+        }
+        try {
+            if (!USERS_FILE.exists()) return false;
+            String hashed = PasswordUtil.hash(code);
+            Scanner scanner = new Scanner(USERS_FILE);
+            while (scanner.hasNextLine()) {
+                User user = parseLine(scanner.nextLine());
+                if (user != null && hashed.equals(user.getPassword())) {
+                    if (username == null || !user.getUsername().equals(username)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private User parseLine(String line) {
         String[] p = line.split(",", -1);
         if (p.length < 3) {
@@ -122,6 +176,49 @@ public class UserStoreFile {
                 ? UserPermissions.fromCompactString(p[8])
                 : UserPermissions.forRole(role);
         return new User(p[0], p[1], role, firstName, lastName, age, gender, salary, permissions);
+    }
+
+    private List<User> loadAll() {
+        try {
+            List<User> users = new ArrayList<>();
+            if (!USERS_FILE.exists()) {
+                return users;
+            }
+            Scanner scanner = new Scanner(USERS_FILE);
+            while (scanner.hasNextLine()) {
+                User user = parseLine(scanner.nextLine());
+                if (user != null) {
+                    users.add(user);
+                }
+            }
+            return users;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private boolean writeAll(Collection<User> users) {
+        try (FileWriter writer = new FileWriter(USERS_FILE, false)) {
+            for (User user : users) {
+                String userData = String.join(",",
+                        safe(user.getUsername()),
+                        safe(user.getPassword()),
+                        user.getRole().name(),
+                        safe(user.getFirstName()),
+                        safe(user.getLastName()),
+                        safe(user.getAge()),
+                        safe(user.getGender()),
+                        safe(user.getSalary()),
+                        user.getPermissions().toCompactString()
+                ) + "\n";
+                writer.write(userData);
+            }
+            writer.flush();
+            return true;
+        } catch (Exception e) {
+            System.out.println("Error writing to file: " + e.getMessage());
+            return false;
+        }
     }
 
     private String safe(String value) {

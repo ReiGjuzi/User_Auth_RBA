@@ -110,6 +110,16 @@ public class Admin_page extends JFrame {
 			setVisible(false);
 		});
 
+		btnNewButton_1.addActionListener(e -> { // Edit User
+			new Edit_user(store, this).setVisible(true);
+			setVisible(false);
+		});
+
+		btnNewButton_2.addActionListener(e -> { // Delete User
+			new Delete_user(store, this).setVisible(true);
+			setVisible(false);
+		});
+
 		btnNewButton_7.addActionListener(e -> { // Go Back to login
 			parent.setVisible(true);
 			dispose();
