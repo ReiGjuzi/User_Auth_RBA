@@ -2,6 +2,7 @@ package UI;
 
 import model.User;
 import model.UserStoreFile;
+import security.PasswordUtil;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -96,11 +97,25 @@ public class Login_page extends JFrame {
 				statusLabel.setText("Code must be 4 digits");
 				return;
 			}
-			User user = store.authenticate(username, code);
+			User user = store.get(username);
 			if (user == null) {
 				statusLabel.setText("Invalid credentials");
 				return;
 			}
+			if (user.isLocked()) {
+				statusLabel.setText("Account locked. Contact admin to unlock the account.");
+				return;
+			}
+			if (!PasswordUtil.matches(code, user.getPassword())) {
+				boolean locked = store.recordFailedLogin(username);
+				if (locked) {
+					statusLabel.setText("Account locked. Contact admin to unlock the account.");
+				} else {
+					statusLabel.setText("Invalid credentials");
+				}
+				return;
+			}
+			store.resetLoginFailures(username);
 			statusLabel.setText(" ");
 			if (user.getRole().isAdmin()) {
 				new Admin_page(store, this).setVisible(true);

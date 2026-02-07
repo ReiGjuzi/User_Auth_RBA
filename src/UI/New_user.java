@@ -528,7 +528,30 @@ public class New_user extends JFrame {
 					? readPermissionsFromRows()
 					: UserPermissions.forRole(role);
 
-			User updatedUser = new User(username, hashedCode, role, username, surname, age, gender, salary, permissions);
+			int failedAttempts = 0;
+			boolean locked = false;
+			if (editing && currentUser != null) {
+				failedAttempts = currentUser.getFailedAttempts();
+				locked = currentUser.isLocked();
+				if (!code.isEmpty()) {
+					failedAttempts = 0;
+					locked = false;
+				}
+			}
+
+			User updatedUser = new User(
+					username,
+					hashedCode,
+					role,
+					username,
+					surname,
+					age,
+					gender,
+					salary,
+					permissions,
+					failedAttempts,
+					locked
+			);
 			if (editing) {
 				String existingUsername = currentUser.getUsername();
 				if (!store.update(existingUsername, updatedUser)) {

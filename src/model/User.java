@@ -12,9 +12,11 @@ public class User {
     private String gender;
     private String salary;
     private UserPermissions permissions;
+    private int failedAttempts;
+    private boolean locked;
 
     public User(String username, String password, Role role) {
-        this(username, password, role, "", "", "", "", "", UserPermissions.forRole(role));
+        this(username, password, role, "", "", "", "", "", UserPermissions.forRole(role), 0, false);
     }
 
     public User(
@@ -28,6 +30,22 @@ public class User {
             String salary,
             UserPermissions permissions
     ) {
+        this(username, password, role, firstName, lastName, age, gender, salary, permissions, 0, false);
+    }
+
+    public User(
+            String username,
+            String password,
+            Role role,
+            String firstName,
+            String lastName,
+            String age,
+            String gender,
+            String salary,
+            UserPermissions permissions,
+            int failedAttempts,
+            boolean locked
+    ) {
         this.username = username;
         this.password = password;
         this.role = role;
@@ -37,6 +55,8 @@ public class User {
         this.gender = gender;
         this.salary = salary;
         this.permissions = permissions == null ? UserPermissions.forRole(role) : permissions;
+        this.failedAttempts = Math.max(0, failedAttempts);
+        this.locked = locked;
     }
 
     public String getUsername() {
@@ -65,6 +85,12 @@ public class User {
     }
     public UserPermissions getPermissions() {
         return permissions;
+    }
+    public int getFailedAttempts() {
+        return failedAttempts;
+    }
+    public boolean isLocked() {
+        return locked;
     }
 
     public void setUsername(String username) {
@@ -96,5 +122,11 @@ public class User {
     }
     public void setPermissions(UserPermissions permissions) {
         this.permissions = permissions;
+    }
+    public void setFailedAttempts(int failedAttempts) {
+        this.failedAttempts = Math.max(0, failedAttempts);
+    }
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 }

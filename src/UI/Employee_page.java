@@ -296,19 +296,25 @@ public class Employee_page extends JFrame {
 	}
 
 	private void applyPermissions(UserPermissions permissions) {
-		boolean createEnabled = Authorization.hasAnyAccess(permissions, Permission.CREATE_ORDER);
-		showComboBox.setEnabled(createEnabled);
-		hallComboBox.setEnabled(createEnabled);
-		timeField.setEnabled(createEnabled);
-		dateField.setEnabled(createEnabled);
-		seatField.setEnabled(createEnabled);
-		ticketPriceField.setEnabled(createEnabled);
-		ticketQuantityField.setEnabled(createEnabled);
-		totalPriceField.setEnabled(createEnabled);
+		boolean createRead = Authorization.can(permissions, Permission.CREATE_ORDER, AccessLevel.READ);
 		boolean createWrite = Authorization.can(permissions, Permission.CREATE_ORDER, AccessLevel.WRITE);
+		setTabEnabled(newTicketPanel, createRead);
+		showComboBox.setEnabled(createWrite);
+		hallComboBox.setEnabled(createWrite);
+		timeField.setEnabled(createWrite);
+		dateField.setEnabled(createWrite);
+		seatField.setEnabled(createWrite);
+		ticketPriceField.setEnabled(createWrite);
+		ticketQuantityField.setEnabled(createWrite);
+		totalPriceField.setEnabled(createWrite);
 		quantityPlusButton.setEnabled(createWrite);
 		quantityMinusButton.setEnabled(createWrite);
 		saveOrderButton.setEnabled(createWrite);
+
+		boolean ordersRead = Authorization.can(permissions, Permission.EDIT_ORDER, AccessLevel.READ)
+				|| Authorization.can(permissions, Permission.CONFIRM_PURCHASE, AccessLevel.READ)
+				|| Authorization.can(permissions, Permission.DELETE_PURCHASE, AccessLevel.READ);
+		setTabEnabled(ordersPanel, ordersRead);
 
 		boolean editWrite = Authorization.can(permissions, Permission.EDIT_ORDER, AccessLevel.WRITE);
 		orderSlot1Button.setEnabled(editWrite);
@@ -317,13 +323,17 @@ public class Employee_page extends JFrame {
 		confirmPurchaseButton.setEnabled(Authorization.can(permissions, Permission.CONFIRM_PURCHASE, AccessLevel.WRITE));
 		deleteOrderButton.setEnabled(Authorization.can(permissions, Permission.DELETE_PURCHASE, AccessLevel.WRITE));
 
-		boolean showAccess = Authorization.hasAnyAccess(permissions, Permission.EDIT_SHOW_NAME)
-				|| Authorization.hasAnyAccess(permissions, Permission.EDIT_SHOW_INFO)
-				|| Authorization.hasAnyAccess(permissions, Permission.ADD_SHOW)
-				|| Authorization.hasAnyAccess(permissions, Permission.DELETE_SHOW);
-		int changesIndex = tabbedPane.indexOfComponent(changesPanel);
-		if (changesIndex >= 0) {
-			tabbedPane.setEnabledAt(changesIndex, showAccess);
+		boolean showRead = Authorization.can(permissions, Permission.EDIT_SHOW_NAME, AccessLevel.READ)
+				|| Authorization.can(permissions, Permission.EDIT_SHOW_INFO, AccessLevel.READ)
+				|| Authorization.can(permissions, Permission.ADD_SHOW, AccessLevel.READ)
+				|| Authorization.can(permissions, Permission.DELETE_SHOW, AccessLevel.READ);
+		setTabEnabled(changesPanel, showRead);
+	}
+
+	private void setTabEnabled(JPanel panel, boolean enabled) {
+		int tabIndex = tabbedPane.indexOfComponent(panel);
+		if (tabIndex >= 0) {
+			tabbedPane.setEnabledAt(tabIndex, enabled);
 		}
 	}
 

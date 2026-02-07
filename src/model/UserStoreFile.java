@@ -14,6 +14,7 @@ import java.util.Scanner;
 public class UserStoreFile {
 
     private final File USERS_FILE = new File("users.txt");
+    private static final int MAX_FAILED_ATTEMPTS = 3;
 
 
     public boolean exists(String username) {
@@ -26,6 +27,9 @@ public class UserStoreFile {
         }
         User user = get(username);
         if (user == null) {
+            return null;
+        }
+        if (user.isLocked()) {
             return null;
         }
         return PasswordUtil.matches(code, user.getPassword()) ? user : null;
@@ -67,7 +71,9 @@ public class UserStoreFile {
                     safe(user.getAge()),
                     safe(user.getGender()),
                     safe(user.getSalary()),
-                    user.getPermissions().toCompactString()
+                    user.getPermissions().toCompactString(),
+                    String.valueOf(user.getFailedAttempts()),
+                    String.valueOf(user.isLocked())
             ) + "\n";
             writer.write(userData);
             writer.flush();
@@ -172,6 +178,41 @@ public class UserStoreFile {
         }
     }
 
+    public boolean recordFailedLogin(String username) {
+        if (username == null) {
+            return false;
+        }
+        List<User> users = loadAll();
+        for (User user : users) {
+            if (username.equals(user.getUsername())) {
+                int attempts = user.getFailedAttempts() + 1;
+                user.setFailedAttempts(attempts);
+                if (attempts >= MAX_FAILED_ATTEMPTS) {
+                    user.setLocked(true);
+                }
+                boolean locked = user.isLocked();
+                writeAll(users);
+                return locked;
+            }
+        }
+        return false;
+    }
+
+    public boolean resetLoginFailures(String username) {
+        if (username == null) {
+            return false;
+        }
+        List<User> users = loadAll();
+        for (User user : users) {
+            if (username.equals(user.getUsername())) {
+                user.setFailedAttempts(0);
+                user.setLocked(false);
+                return writeAll(users);
+            }
+        }
+        return false;
+    }
+
     private User parseLine(String line) {
         String[] p = line.split(",", -1);
         if (p.length < 3) {
@@ -189,7 +230,16 @@ public class UserStoreFile {
         UserPermissions permissions = p.length > 8
                 ? UserPermissions.fromCompactString(p[8])
                 : UserPermissions.forRole(role);
-        return new User(p[0], p[1], role, firstName, lastName, age, gender, salary, permissions);
+        int failedAttempts = 0;
+        if (p.length > 9) {
+            try {
+                failedAttempts = Integer.parseInt(p[9]);
+            } catch (NumberFormatException ignored) {
+                failedAttempts = 0;
+            }
+        }
+        boolean locked = p.length > 10 && Boolean.parseBoolean(p[10]);
+        return new User(p[0], p[1], role, firstName, lastName, age, gender, salary, permissions, failedAttempts, locked);
     }
 
     private List<User> loadAll() {
@@ -223,7 +273,9 @@ public class UserStoreFile {
                         safe(user.getAge()),
                         safe(user.getGender()),
                         safe(user.getSalary()),
-                        user.getPermissions().toCompactString()
+                        user.getPermissions().toCompactString(),
+                        String.valueOf(user.getFailedAttempts()),
+                        String.valueOf(user.isLocked())
                 ) + "\n";
                 writer.write(userData);
             }

@@ -64,7 +64,7 @@ public final class Authorization {
             return required == AccessLevel.READ || required == AccessLevel.WRITE || required == AccessLevel.READ_WRITE;
         }
         if (required == AccessLevel.READ) {
-            return level == AccessLevel.READ;
+            return level == AccessLevel.READ || level == AccessLevel.WRITE;
         }
         if (required == AccessLevel.WRITE) {
             return level == AccessLevel.WRITE;
