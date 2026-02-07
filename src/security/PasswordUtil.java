@@ -2,7 +2,7 @@ package security;
 
 import java.security.MessageDigest;
 
-public class PasswordUtil {
+public class PasswordUtil { // Utility class for hashing and verifying passwords
 
     public static String hash(String password) {
         try {

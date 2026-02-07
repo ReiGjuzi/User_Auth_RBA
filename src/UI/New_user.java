@@ -24,6 +24,8 @@ import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingConstants;
 import javax.swing.JCheckBox;
+import javax.swing.JScrollPane;
+import java.awt.Dimension;
 
 public class New_user extends JFrame {
 	private static final long serialVersionUID = 1L;
@@ -64,12 +66,17 @@ public class New_user extends JFrame {
 		this.editing = user != null;
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 943);
+		setBounds(100, 100, 450, 800);
 		contentPane = new JPanel();
 		contentPane.setBackground(new Color(0, 0, 0));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		contentPane.setPreferredSize(new Dimension(420, 920));
+
+		JScrollPane scrollPane = new JScrollPane(contentPane);
+		scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+		setContentPane(scrollPane);
 		
 		titleLabel = new JLabel(editing ? "Edit User" : "Register User");
 		titleLabel.setFont(new Font("Tahoma", Font.PLAIN, 24));

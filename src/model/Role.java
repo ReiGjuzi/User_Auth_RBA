@@ -39,12 +39,6 @@ public enum Role {
                 return role;
             }
         }
-        if ("Employee1".equalsIgnoreCase(name)
-                || "Employee2".equalsIgnoreCase(name)
-                || "Employye2".equalsIgnoreCase(name)
-                || "Employee3".equalsIgnoreCase(name)) {
-            return BOX_OFFICE;
-        }
         return fromStoredName(name);
     }
 

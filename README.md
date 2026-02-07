@@ -103,8 +103,6 @@ Each line is a comma-separated record:
 10) failedAttempts (integer)
 11) locked (true/false)
 
-Older records with fewer fields are supported and default to no lock and 0 failed attempts.
-
 ## Code map (class by class)
 `src/app/AppMain.java`
 - App entry point.
@@ -118,9 +116,6 @@ Older records with fewer fields are supported and default to no lock and 0 faile
 `src/model/User.java`
 - User domain model with profile fields.
 - Stores permissions, failedAttempts, and lock state.
-
-`src/model/UserStore.java`
-- In-memory user store (not used by the main app).
 
 `src/model/UserStoreFile.java`
 - File-backed store for users.
@@ -163,12 +158,3 @@ Older records with fewer fields are supported and default to no lock and 0 faile
 
 `src/UI/Employee_page.java`
 - Employee workflow tabs and permission gating.
-
-`src/test/UserStoreSwingTest.java`
-- Small Swing test for adding users to the file store.
-
-## Known limitations
-- File storage is plain text and not encrypted.
-- Password hashing uses SHA-256 without salt.
-- Orders and show updates are UI-only and not persisted.
-- No concurrent file access handling.

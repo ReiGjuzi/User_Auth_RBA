@@ -2,7 +2,7 @@ package security;
 
 import model.Role;
 
-public class UserPermissions {
+public class UserPermissions {  // Represents the permissions for a user based on their role
     private AccessLevel createOrder;
     private AccessLevel editOrder;
     private AccessLevel confirmPurchase;

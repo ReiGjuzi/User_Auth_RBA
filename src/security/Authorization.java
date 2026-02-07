@@ -2,11 +2,10 @@ package security;
 
 import model.User;
 
-public final class Authorization {
+public final class Authorization { // Utility class for checking user permissions
 
     private Authorization() {
     }
-
     public static boolean can(User user, Permission permission, AccessLevel required) {
         if (user == null) {
             return false;

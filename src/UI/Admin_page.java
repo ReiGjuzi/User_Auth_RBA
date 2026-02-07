@@ -64,22 +64,6 @@ public class Admin_page extends JFrame {
 		lblNewLabel_1.setBounds(22, 80, 152, 14);
 		contentPane.add(lblNewLabel_1);
 		
-		JButton btnNewButton_3 = new JButton("No action");
-		btnNewButton_3.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-			}
-		});
-		btnNewButton_3.setBackground(new Color(0, 0, 0));
-		btnNewButton_3.setForeground(new Color(255, 255, 255));
-		btnNewButton_3.setBounds(22, 171, 391, 23);
-		contentPane.add(btnNewButton_3);
-		
-		JButton btnNewButton_3_1 = new JButton("No action");
-		btnNewButton_3_1.setForeground(Color.WHITE);
-		btnNewButton_3_1.setBackground(Color.BLACK);
-		btnNewButton_3_1.setBounds(22, 194, 391, 23);
-		contentPane.add(btnNewButton_3_1);
-		
 		JButton btnNewButton_4 = new JButton("Add product");
 		btnNewButton_4.setBackground(new Color(0, 0, 0));
 		btnNewButton_4.setForeground(new Color(255, 255, 255));
